@@ -29,14 +29,14 @@ const UserSchema = new mongoose.Schema({
     podCasts:{
         type:mongoose.Schema.Types.ObjectId,
         ref:"PodCasts",
-        required:false,
-        default:[]
+        required:false
+        // default:[]
     },
     favorites:{
         type:mongoose.Schema.Types.ObjectId,
         ref:"PodCasts",
-        required:false,
-        default:[]
+        required:false
+        // default:[]
     }
 },{timestamps:true});
 

@@ -15,6 +15,9 @@ app.use(express.json());
 app.use(cors());
 app.use(morgan('dev'));
 
+// Authentication routes
+app.use("/api/auth",require('./Routes/authRoutes'));
+
 
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`.bgBlue.white);
