@@ -16,7 +16,12 @@ module.exports = async (req, res, next) => {
             }
             else
             {
-                req.body.userId = decode.userId;
+                req.body = decode;
+                // res.send({
+                //     success:true,
+                //     message:'Authentication successful',
+                //     body:decode
+                // })
                 next();
             }
         })

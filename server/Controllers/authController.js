@@ -88,11 +88,20 @@ const loginController = async (req, res) => {
         }
 
         // create a token
-        const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "1d" });
+        const token = jwt.sign({ userId: user._id, email:user.email }, process.env.JWT_SECRET);
+
+        // set the cookie
+        res.cookie("authToken",token,{
+            httpOnly:true,
+            secure:true,
+            sameSite:'none',
+            maxAge:24*60*60*1000 //86400000
+        })
+
         return res.status(200).send({
             message: 'User Logged In Successfully',
             success: true,
-            token
+            token,
         });
 
     } catch (error) {
@@ -124,4 +133,22 @@ const currentUserController = async (req, res) => {
     }
 }
 
-module.exports = { registerController, loginController, currentUserController };
+// Log out the user controller call back
+const logoutController = async (req, res) => {
+    try {
+        await res.clearCookie('authToken');
+        return res.status(200).send({
+            success:true,
+            message:"User Logged Out Successfully",
+        })
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            message: "Internal server error in logging out user",
+            success: false,
+            error
+        });
+    }
+}
+
+module.exports = { registerController, loginController, currentUserController, logoutController };
