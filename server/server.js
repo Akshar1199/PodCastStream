@@ -19,6 +19,8 @@ app.use(morgan('dev'));
 
 // Authentication routes
 app.use("/api/auth",require('./Routes/authRoutes'));
+// User Routes
+app.use("/api/user",require('./Routes/userRoutes'));
 
 
 app.listen(PORT, () => {
