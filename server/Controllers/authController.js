@@ -15,7 +15,7 @@ const registerController = async (req, res) => {
                 email
             });
         }
-        const existingUser = await UserModel.findOne({email});
+        const existingUser = await UserModel.findOne({ email });
         if (existingUser) {
             return res.status(400).json({
                 message: "User already exists",
@@ -61,7 +61,7 @@ const loginController = async (req, res) => {
             });
         }
 
-        const user = await UserModel.findOne({email});
+        const user = await UserModel.findOne({ email });
         if (!user) {
             return res.status(400).json({
                 message: "User does not exist",
@@ -88,19 +88,20 @@ const loginController = async (req, res) => {
         }
 
         // create a token
-        const token = jwt.sign({ userId: user._id, email:user.email }, process.env.JWT_SECRET);
+        const token = jwt.sign({ userId: user._id, email: user.email }, process.env.JWT_SECRET);
 
         // set the cookie
-        res.cookie("authToken",token,{
-            httpOnly:true,
-            secure:true,
-            sameSite:'none',
-            maxAge:24*60*60*1000 //86400000
+        res.cookie("authToken", token, {
+            httpOnly: true,
+            secure: true,
+            sameSite: 'none',
+            maxAge: 24 * 60 * 60 * 1000 //86400000
         })
 
         return res.status(200).send({
             message: 'User Logged In Successfully',
             success: true,
+            user,
             token,
         });
 
@@ -117,10 +118,10 @@ const loginController = async (req, res) => {
 // get current user controller call back
 const currentUserController = async (req, res) => {
     try {
-        const user = await UserModel.findOne({_id:req.body.userId})
+        const user = await UserModel.findOne({ _id: req.body.userId })
         return res.status(200).send({
-            success:true,
-            message:"User fetched succesfully",
+            success: true,
+            message: "User fetched succesfully",
             user
         })
     } catch (error) {
@@ -138,8 +139,8 @@ const logoutController = async (req, res) => {
     try {
         await res.clearCookie('authToken');
         return res.status(200).send({
-            success:true,
-            message:"User Logged Out Successfully",
+            success: true,
+            message: "User Logged Out Successfully",
         })
     } catch (error) {
         console.log(error);
@@ -151,4 +152,74 @@ const logoutController = async (req, res) => {
     }
 }
 
-module.exports = { registerController, loginController, currentUserController, logoutController };
+// Google Log in controller call back
+const googleSignInController = async (req, res) => {
+    try {
+        const user = await UserModel.findOne({ email: req.body.email });
+        if (!user) { // user does not exist so we will create a new user
+            try {
+                req.body.googleSignIn = true;
+                const newUser = new UserModel(req.body);
+                await newUser.save();
+
+                // create a token
+                const token = jwt.sign({ userId: newUser._id, email: newUser.email }, process.env.JWT_SECRET);
+                // set the cookie
+                res.cookie("authToken", token, {
+                    httpOnly: true,
+                    secure: true,
+                    sameSite: 'none',
+                    maxAge: 24 * 60 * 60 * 1000 //86400000
+                })
+
+                return res.status(200).send({
+                    message: 'User Created and Logged In Successfully',
+                    success: true,
+                    newUser,
+                    token,
+                });
+
+            } catch (error) {
+                return res.status(500).json({
+                    message: "Internal server error in creating user",
+                    success: false,
+                    error
+                });
+            }
+        }
+        else if (user.googleSignIn) {
+            // create token only
+            const token = jwt.sign({ userId: user._id, email: user.email }, process.env.JWT_SECRET);
+            // set the cookie
+            res.cookie("authToken", token, {
+                httpOnly: true,
+                secure: true,
+                sameSite: 'none',
+                maxAge: 24 * 60 * 60 * 1000 //86400000
+            })
+
+            return res.status(200).send({
+                message: 'User Logged In Successfully',
+                success: true,
+                user,
+                token,
+            });
+        }
+        else if (user.googleSignIn === false) {
+            return res.status(400).json({
+                message: "User already exists with this email",
+                success: false,
+                user
+            });
+        }
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            message: "Internal server error in logging in user",
+            success: false,
+            error
+        });
+    }
+}
+
+module.exports = { registerController, loginController, currentUserController, logoutController, googleSignInController };

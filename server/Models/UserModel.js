@@ -11,19 +11,24 @@ const UserSchema = new mongoose.Schema({
         required:[true,"Email is required"],
         unique:true,
     },
+    googleSignIn:{
+        type:Boolean,
+        required:[true,"Google Sign In is required"],
+        unique:false,
+    },
     password:{
         type:String,
-        required:[true,"Password is required"],
+        required:function(){
+            if(!this.googleSignIn){
+                return true;
+            }
+            return false;
+        },
         unique:false,
     },
     image:{
         type:String,
         required:false,
-        unique:false,
-    },
-    googleSignIn:{
-        type:Boolean,
-        required:[true,"Google Sign In is required"],
         unique:false,
     },
     podCasts:{
