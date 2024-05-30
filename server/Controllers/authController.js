@@ -3,11 +3,51 @@ const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
 dotenv.config();
 const UserModel = require('../Models/UserModel');
+const crypto = require("crypto");
+const nodemailer = require("nodemailer");
+
+const OTPController = async (req, res) => {
+    const { email: new_email } = req.body;
+    console.log(new_email);
+
+    if (!new_email) {
+        return res.status(400).json({ message: "Email is required" });
+    }
+
+    const otp = `${Math.floor(1000 + Math.random() * 90000)}`;
+
+    const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        // secure: true,
+        // port: 465,
+        auth: {
+            user: process.env.AUTH_EMAIL,
+            pass: process.env.AUTH_PASS,
+        },
+    });
+
+    const mailOptions = {
+        from: process.env.AUTH_EMAIL,
+        to: new_email,
+        subject: 'Verify your email',
+        html: `<p>Enter <b>${otp}</b> in the app to verify your email address and complete the registration process.</p>`,
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+            console.error('Error sending email:', error);
+            return res.status(500).json({ error: 'Failed to send OTP' });
+        }
+        console.log('OTP sent:', info.response);
+        res.status(200).json({ otp });
+    });
+};
 
 // sign up controller call back
 const registerController = async (req, res) => {
     try {
         const { email } = req.body;
+        console.log(email);
         if (!email) {
             return res.status(400).json({
                 message: "Email is required",
@@ -17,8 +57,8 @@ const registerController = async (req, res) => {
         }
         const existingUser = await UserModel.findOne({ email });
         if (existingUser) {
-            return res.status(400).json({
-                message: "User already exists",
+            return res.status(401).json({
+                message: "User with the same email already exists",
                 success: false,
                 existingUser
             });
@@ -63,7 +103,7 @@ const loginController = async (req, res) => {
 
         const user = await UserModel.findOne({ email });
         if (!user) {
-            return res.status(400).json({
+            return res.status(401).json({
                 message: "User does not exist",
                 success: false,
                 user
@@ -80,7 +120,7 @@ const loginController = async (req, res) => {
         // compare the password
         const validPassword = await bcrypt.compare(password, user.password);
         if (!validPassword) {
-            return res.status(400).json({
+            return res.status(402).json({
                 message: "Invalid password",
                 success: false,
                 user
@@ -113,7 +153,7 @@ const loginController = async (req, res) => {
             error
         });
     }
-}
+}   
 
 // get current user controller call back
 const currentUserController = async (req, res) => {
@@ -137,6 +177,7 @@ const currentUserController = async (req, res) => {
 // Log out the user controller call back
 const logoutController = async (req, res) => {
     try {
+        console.log("Logging out user");
         await res.clearCookie('authToken');
         return res.status(200).send({
             success: true,
@@ -222,4 +263,4 @@ const googleSignInController = async (req, res) => {
     }
 }
 
-module.exports = { registerController, loginController, currentUserController, logoutController, googleSignInController };
+module.exports = { registerController, loginController, OTPController, currentUserController, logoutController, googleSignInController };

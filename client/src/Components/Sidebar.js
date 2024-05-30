@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { AiOutlineClose, AiFillHome, AiOutlineSearch, AiOutlineCloudUpload } from 'react-icons/ai';
+import { AiOutlineClose, AiFillHome, AiOutlineCloudUpload } from 'react-icons/ai';
 import { LuLogOut } from "react-icons/lu";
 import { FaHeart, FaSearch } from "react-icons/fa";
 import { MdOutlineLightMode, MdOutlineDarkMode } from "react-icons/md";
@@ -83,56 +83,77 @@ const Image = styled.img`
   height: 40px;
 `;
 
-const Sidebar = ({ menuOpen, setMenuOpen, darkMode, setDarkMode }) => {
-  
+function Sidebar({ menuOpen, setMenuOpen, darkMode, setDarkMode, authToken, handleLogout}) {
+
+
   return (
     <MenuContainer menuOpen={menuOpen}>
       <Flex>
+
         <Link to="/" style={{ textDecoration: "none", color: "inherit" }}>
           <Logo>
             <Image src={LogoIcon} />
             PODSTREAM
           </Logo>
         </Link>
+
         <Close>
           <AiOutlineClose onClick={() => setMenuOpen(false)} style={{ cursor: "pointer" }} />
         </Close>
+
       </Flex>
+
       <Link to='/' style={{ textDecoration: "none", color: "inherit", width: '100%' }}>
         <Elements>
           <AiFillHome />
           <NavText>Dashboard</NavText>
         </Elements>
       </Link>
+
       <Link to='/search' style={{ textDecoration: "none", color: "inherit", width: '100%' }}>
         <Elements>
           <FaSearch />
           <NavText>Search</NavText>
         </Elements>
       </Link>
-      <Link to='/favorites' style={{ textDecoration: "none", color: "inherit", width: '100%' }}>
-        <Elements>
-          <FaHeart />
-          <NavText>Favorites</NavText>
-        </Elements>
-      </Link>
+
+      {authToken ?
+        <Link to='/favorites' style={{ textDecoration: "none", color: "inherit", width: '100%' }}>
+          <Elements>
+            <FaHeart />
+            <NavText>Favorites</NavText>
+          </Elements>
+        </Link>
+        : null}
+
       <HR />
-      <Link to='/upload' style={{ textDecoration: "none", color: "inherit", width: '100%' }}>
-        <Elements>
-          <AiOutlineCloudUpload />
-          <NavText>Upload</NavText>
-        </Elements>
-      </Link>
+
+      {authToken ?
+
+        <Link to='/upload' style={{ textDecoration: "none", color: "inherit", width: '100%' }}>
+          <Elements>
+            <AiOutlineCloudUpload />
+            <NavText>Upload</NavText>
+          </Elements>
+        </Link>
+        : null}
+
       <Elements onClick={() => setDarkMode(!darkMode)}>
         {darkMode ? <MdOutlineLightMode /> : <MdOutlineDarkMode />}
         <NavText>{darkMode ? "Light Mode" : "Dark Mode"}</NavText>
       </Elements>
-      <Link to='/logout' style={{ textDecoration: "none", color: "inherit", width: '100%' }}>
-        <Elements>
-          <LuLogOut />
-          <NavText>Logout</NavText>
-        </Elements>
-      </Link>
+
+      {authToken ?
+        <Link style={{ textDecoration: "none", color: "inherit", width: '100%' }} onClick={handleLogout}>
+          <Elements>
+            <LuLogOut />
+            <NavText>Logout</NavText>
+          </Elements>
+        </Link>
+        : null}
+
+
+
     </MenuContainer>
   );
 }

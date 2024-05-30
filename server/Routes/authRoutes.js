@@ -1,12 +1,14 @@
 const express = require('express');
 const authMiddleware = require('../Middlewares/authMiddleware');
-const { registerController, loginController, currentUserController, logoutController, googleSignInController } = require('../Controllers/authController');
+const { registerController, loginController, currentUserController, OTPController, logoutController, googleSignInController } = require('../Controllers/authController');
 const router = express.Router();
 
 // Sign Up || POST
 router.post("/signup",registerController)
 // Sign In || POST
 router.post("/signin",loginController)
+//OTP
+router.post("/sendOtp",OTPController)
 // Log Out || POST
 router.get("/logout",logoutController)
 // Google Sign In || POST

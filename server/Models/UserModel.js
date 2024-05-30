@@ -13,7 +13,7 @@ const UserSchema = new mongoose.Schema({
     },
     googleSignIn:{
         type:Boolean,
-        required:[true,"Google Sign In is required"],
+        required:[false],
         unique:false,
     },
     password:{
