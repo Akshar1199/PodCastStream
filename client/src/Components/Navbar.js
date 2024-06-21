@@ -66,8 +66,8 @@ const ProfileImage = styled.img`
 function Navbar({ menuOpen, setMenuOpen, name, image, onLoginSuccess }) {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showSignupModal, setShowSignupModal] = useState(false);
-  const [showProfile, setShowProfile] = useState(false);
   const navigate = useNavigate();
+  
   
 
   const handleSignupClick = () => {
@@ -83,6 +83,7 @@ function Navbar({ menuOpen, setMenuOpen, name, image, onLoginSuccess }) {
   const ImageClick = () => {
     navigate('/profile');
   }
+
 
   return (
     <>

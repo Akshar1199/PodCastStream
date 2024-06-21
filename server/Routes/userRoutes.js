@@ -1,9 +1,10 @@
 const express = require('express');
-const { updateUserController, emailExistenceController } = require('../Controllers/userController');
+const { updateUserController, emailExistenceController, userDataController } = require('../Controllers/userController');
 const router = express.Router();
 
-// update the user profile
-router.put("/update-profile/:id",updateUserController)
+router.get("/userdata/:id", userDataController);
+
+router.put("/update-profile/:id",updateUserController);
 
 router.post("/checkEmail", emailExistenceController);
     

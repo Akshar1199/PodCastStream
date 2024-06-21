@@ -7,6 +7,9 @@ import Sidebar from "./Components/Sidebar";
 import Navbar from "./Components/Navbar";
 import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
+import Upload from "./pages/Upload";
+import PodcastDetails from "./pages/PodcastDetails";
+import DisplayPodcasts from "./pages/DisplayPodcasts";
 
 const Container = styled.div`
   display: flex;
@@ -43,8 +46,9 @@ function App() {
   const [authToken, setAuthToken] = useState(localStorage.getItem('authToken') || '');
   const [image, setImage] = useState(localStorage.getItem('image') || '');
   const [name, setName] = useState(localStorage.getItem('name') || '');
-  const [email, setEmail] = useState(localStorage.getItem('email') || '');
-  
+
+
+
   useEffect(() => {
     localStorage.setItem("theme", darkMode ? "dark" : "light");
   }, [darkMode]);
@@ -106,6 +110,9 @@ function App() {
     }
   };
 
+ 
+
+
   return (
     <ThemeProvider theme={darkMode ? darkTheme : lightTheme}>
       <Router>
@@ -119,6 +126,7 @@ function App() {
                 setDarkMode={setDarkMode}
                 authToken={authToken}
                 handleLogout={handleLogout}
+             
               />}
 
             <Frame>
@@ -128,16 +136,22 @@ function App() {
                 name={name}
                 image={image}
                 onLoginSuccess={handleLoginSuccess}
-                
+
               />
-              
+
               <Routes>
                 <Route path="/" element={<Dashboard />} />
                 {authToken ?
-                  <Route path="/profile" element={<Profile />} />
+                  <>
+                    <Route path="/profile" element={<Profile />} />
+                    <Route path="/upload" element={<Upload />} />
+                    <Route path="/podcast/:podcastId" element={<PodcastDetails/>} />
+                  </>
                   :
                   <Route path="*" element={<Navigate to="/" />} />
                 }
+                <Route path="/showpodcasts/:type" element={<DisplayPodcasts />} />
+
 
               </Routes>
             </Frame>

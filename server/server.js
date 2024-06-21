@@ -24,6 +24,7 @@ app.use(morgan('dev'));
 // Authentication routes
 app.use("/api/auth", require('./Routes/authRoutes'));
 app.use("/api/auth/user", require('./Routes/userRoutes'));
+app.use("/api/auth/podcast", require('./Routes/podcastRoutes'));
 
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`.bgBlue.white);

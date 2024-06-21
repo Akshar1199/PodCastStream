@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import jwtDecode from 'jwt-decode';
-import { IoMdEye, IoMdEyeOff } from "react-icons/io";
+import PodcastCard from '../Components/PodcastCard';
 
 const Container = styled.div`
   display: flex;
@@ -9,11 +9,19 @@ const Container = styled.div`
   align-items: center;
   padding: 20px;
   width: 100%;
-  overflow-y: scroll;
   @media (max-width: 770px) {
     flex-direction: column;
     
   }
+`;
+
+const DashboardMain = styled.div`
+
+overflow-y: scroll;
+gap: 20px;
+@media (max-width: 768px){
+  padding: 6px 6px;
+}
 `;
 
 const ProfileImage = styled.img`
@@ -40,6 +48,43 @@ const FormField = styled.div`
   @media (max-width: 770px) {
     
   }
+`;
+
+const FilterContainer = styled.div`
+display: flex;
+margin-left: 2%;
+flex-direction: column;
+background-color: ${({ theme }) => theme.bg};
+  border-radius: 6px;
+  width: 95%
+`;
+
+
+const Topic = styled.div`
+  color: ${({ theme }) => theme.text_primary};
+  font-size: 30px;
+  font-weight: 640;
+  display: flex;
+  margin-top: 2%;
+  margin-bottom: 2%;
+  margin-left: 35%;
+  align-items: center;
+  @maedia (max-width: 768px){
+    font-size: 18px;
+  }
+`;
+
+const Podcasts = styled.div`
+display: flex;
+flex-wrap: wrap;
+gap: 14px;
+overflow-y: scroll;
+padding: 18px 6px;
+margin-left: 2%;
+//center the items if only one item present
+@media (max-width: 660px){
+  justify-content: center;
+}
 `;
 
 const Label = styled.label`
@@ -103,15 +148,6 @@ const PasswordInputWrapper = styled.div`
   @media (max-width: 770px) {
     width: 70%;
   }
-`;
-
-const PasswordToggleIcon = styled.div`
-  position: absolute;
-  top: 55%;
-  right: 0.5%;
-  color: ${({ theme }) => theme.primary};
-  transform: translateY(-50%);
-  cursor: pointer;
 `;
 
 const Button = styled.button`
@@ -212,7 +248,7 @@ const ErrorMessage = styled.span`
 `;
 
 
-const Profile = ( ProfileChange ) => {
+const Profile = () => {
   const [image, setImage] = useState(localStorage.getItem('image') || '');
   const [name, setName] = useState(localStorage.getItem('name') || '');
   const [newimage, setNewImage] = useState('');
@@ -231,20 +267,50 @@ const Profile = ( ProfileChange ) => {
   const [passwordChanged, setPasswordChanged] = useState(false);
   const [imageChanged, setImageChanged] = useState(false);
   const [onetime, setOnetime] = useState(false);
+  const [imageUploading, setImageUploading] = useState(false);
+  const [user, setUser] = useState({});
 
   useEffect(() => {
     const authToken = localStorage.getItem("authToken");
-    
+
     if (authToken) {
       try {
         const decodedToken = jwtDecode(authToken);
-        
+        console.log("userId in profile:", decodedToken.userId);
         setUserID(decodedToken.userId);
+        console.log("decodedToken:", userId)
+
       } catch (error) {
         console.error("Error decoding token:", error);
       }
     }
   }, []);
+
+  const getUser = async () => {
+
+    try {
+      const res = await fetch(`http://localhost:4000/api/auth/user/userdata/${userId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        console.log("userdata in profile:", data);
+        setUser(data);
+      } else {
+        console.error('Failed to fetch user');
+      }
+    }
+    catch (error) {
+      console.error('Error fetching user:', error);
+    }
+  };
+
+  useEffect(() => {
+    getUser();
+  }, [userId]);
 
   const handleUpdateClick = async () => {
     if (isEditing && newEmail) {
@@ -303,7 +369,6 @@ const Profile = ( ProfileChange ) => {
     }
   };
 
-
   const handleUpdate = async (e) => {
     e.preventDefault();
 
@@ -359,23 +424,22 @@ const Profile = ( ProfileChange ) => {
       if (response.status === 200) {
         const updatedProfile = await response.json();
         alert("Profile updated successfully");
-        
-        // Update local storage and state with new values
+
         localStorage.setItem('name', updatedProfile.name);
         localStorage.setItem('email', updatedProfile.email);
         localStorage.setItem('image', updatedProfile.image);
-        
+
         setName(updatedProfile.name);
         setEmail(updatedProfile.email);
         setImage(updatedProfile.image);
-        
+
         setIsEditing(false);
         setNewEmail(false);
         setOnetime(false);
         setImageChanged(false);
         setPasswordChanged(false);
         window.location.reload();
-        
+
       } else {
         const errorData = await response.json();
         setErrors2(errorData.message || {});
@@ -385,9 +449,6 @@ const Profile = ( ProfileChange ) => {
     }
   };
 
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
 
   const handleChange2 = (e) => {
     setEmail(e.target.value);
@@ -419,17 +480,22 @@ const Profile = ( ProfileChange ) => {
         form.append("upload_preset", "podcast");
         form.append("cloud_name", "dlerpsnf1");
 
+        setImageUploading(true);
+
         fetch("https://api.cloudinary.com/v1_1/dlerpsnf1/image/upload", {
           method: "POST",
           body: form,
         })
           .then((res) => res.json())
           .then((data) => {
+            console.log("image", data);
             setNewImage(data.secure_url);
             setImageChanged(true);
           })
           .catch((err) => {
             console.log(err);
+          }).finally(() => {
+            setImageUploading(false);
           });
       } else {
         setNewImage('');
@@ -448,12 +514,12 @@ const Profile = ( ProfileChange ) => {
   };
 
   return (
-    <>
+    <DashboardMain>
       <Container>
         <ProfileImage src={image} alt="Profile" />
         <form>
           <FormField>
-            <Label>Name:</Label>
+            <Label >Name:</Label>
             <Input
               type="text"
               value={name}
@@ -497,9 +563,6 @@ const Profile = ( ProfileChange ) => {
                 disabled={!isEditing}
                 style={{ width: '100%' }}
               />
-              {/* <PasswordToggleIcon onClick={togglePasswordVisibility}>
-                {showPassword ? <IoMdEyeOff /> : <IoMdEye />}
-              </PasswordToggleIcon> */}
             </PasswordInputWrapper>
           </FormField>
           {isEditing && (
@@ -543,14 +606,38 @@ const Profile = ( ProfileChange ) => {
               )}
             </Button>
           ) : (
-            <Button type="submit" onClick={handleUpdate}>Update Profile</Button>
+            <>
+              {imageUploading ? <Button disabled={true}>Uploading image...</Button>
+                :
+                <Button type="submit" onClick={handleUpdate}>Update Profile</Button>
+              }
+            </>
           )}
+
         </form>
 
-        
+
+
       </Container>
 
-    </>
+      <Topic>Your Uploads</Topic>
+      {user && user?.podcasts?.length > 0 &&
+
+        <FilterContainer>
+        <Podcasts>
+          {user.podcasts && user.podcasts.length > 0 ? (
+            user.podcasts.map((podcast, index) => (
+              <PodcastCard key={index} podcast={podcast} />
+            ))
+          ) : (
+            <h1>No podcasts available</h1>
+          )}
+        </Podcasts>
+        </FilterContainer>
+
+      }
+
+    </DashboardMain>
   );
 };
 

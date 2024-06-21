@@ -83,7 +83,7 @@ const Image = styled.img`
   height: 40px;
 `;
 
-function Sidebar({ menuOpen, setMenuOpen, darkMode, setDarkMode, authToken, handleLogout}) {
+function Sidebar({ menuOpen, setMenuOpen, darkMode, setDarkMode, authToken, handleLogout }) {
 
 
   return (
